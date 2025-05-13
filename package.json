@@ -1,0 +1,32 @@
+{
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "expressjs": "^1.0.1",
+    "mongoose": "^8.14.2"
+  },
+  "name": "wedding-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx tsc && node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EloxFire/wedding-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/EloxFire/wedding-api/issues"
+  },
+  "homepage": "https://github.com/EloxFire/wedding-api#readme",
+  "description": "",
+  "devDependencies": {
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^5.0.1",
+    "typescript": "^5.8.3"
+  }
+}
