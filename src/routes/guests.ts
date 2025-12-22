@@ -97,33 +97,53 @@ router.post("/:id/family-members", async (req: Request, res: Response) => {
   }
 });
 
-// @route POST /guests/:search
-// @desc Search for guests by firstname or lastname
+// @Route GET /guests/id/family
+// @desc Get all family members of a guest by guest ID, this return full guest objects in an array
 // @access Public
-router.post("/:search", async (req: Request, res: Response) => {
-  const searchParam = req.params.search;
-  console.log(`POST /guests/${searchParam}`);
+router.get("/:id/family", async (req: Request, res: Response) => {
+  const guestId = req.params.id;
+  console.log(`GET /guests/${guestId}/family`);
+
   try {
-    const regex = new RegExp(searchParam, 'i'); // Case-insensitive search
-    const guest = await Guest.findOne({
-      $or: [
-        { firstname: { $regex: regex } },
-        { lastname: { $regex: regex } }
-      ]
-    });
+    const guest = await Guest.findById(guestId);
 
     if (!guest) {
       res.status(404).json({ message: "Guest not found" });
       return;
     }
 
-    const familyMemberIds = guest.family_members || [];
+    const familyMembers = await Guest.find({
+      _id: { $in: guest.family_members || [] }
+    });
 
-    const familyMembers = familyMemberIds.length
-      ? await Guest.find({ _id: { $in: familyMemberIds } })
-      : [];
+    res.status(200).json({ familyMembers });
+  } catch (error: any) {
+    console.log(error);
+    res.status(500).json({ error: error });
+  }
+});
 
-    res.status(200).json({ guest, family_members: familyMembers });
+// @route GET /guests/:search
+// @desc Search for guests by firstname or lastname
+// @access Public
+router.get("/:search", async (req: Request, res: Response) => {
+  const searchParam = req.params.search;
+  console.log(`GET /guests/${searchParam}`);
+  try {
+    const regex = new RegExp(searchParam, 'i'); // Case-insensitive search
+    const guests = await Guest.find({
+      $or: [
+        { firstname: { $regex: regex } },
+        { lastname: { $regex: regex } }
+      ]
+    });
+
+    if (!guests.length) {
+      res.status(404).json({ message: "Guest not found" });
+      return;
+    }
+
+    res.status(200).json({ guests });
   } catch (error: any) {
     console.log(error);
     res.status(500).json({ error: error });

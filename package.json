@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "expressjs": "^1.0.1",
@@ -25,6 +26,7 @@
   "homepage": "https://github.com/EloxFire/wedding-api#readme",
   "description": "",
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.1",
     "typescript": "^5.8.3"
