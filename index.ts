@@ -15,7 +15,7 @@ app.use(router);
 // Routes 
 const indexRouter = require("./src/routes/guests");
 
-app.use("/", indexRouter);
+app.use("/guests", indexRouter);
 
 // Error handling
 app.use((req: Request, res: Response) => {
