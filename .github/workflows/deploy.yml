@@ -1,0 +1,70 @@
+name: Deploy WEDDING API to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Set deployment variables
+        run: |
+          BRANCH=${GITHUB_REF##*/}
+          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
+
+          if [ "$BRANCH" = "main" ]; then
+            echo "${{ secrets.ENV_PROD }}" > .env
+            echo "REMOTE_PATH=/var/www/api.enzolivia.fr" >> $GITHUB_ENV
+            echo "PM2_NAME=wedding-api-prod" >> $GITHUB_ENV
+          else
+            echo "${{ secrets.ENV_DEV }}" > .env
+            echo "REMOTE_PATH=/var/www/dev-api.enzolivia.fr" >> $GITHUB_ENV
+            echo "PM2_NAME=wedding-api-dev" >> $GITHUB_ENV
+          fi
+
+      - name: Copy .env to VPS as root
+        run: |
+          scp -o StrictHostKeyChecking=no .env root@${{ secrets.VPS_HOST }}:$REMOTE_PATH/.env
+
+      - name: Deploy via SSH as root
+        run: |
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.VPS_HOST }} << EOF
+            set -e
+            cd $REMOTE_PATH
+
+            echo "📦 Loading NVM"
+            export NVM_DIR="\$HOME/.nvm"
+            [ -s "\$NVM_DIR/nvm.sh" ] && \. "\$NVM_DIR/nvm.sh"
+
+            echo "🔁 Git Pull"
+            git fetch origin
+            git checkout $BRANCH
+            git pull origin $BRANCH
+          
+            echo "📦 Checking pm2 installation"
+            which pm2 || npm install -g pm2
+
+            echo "📦 Node.js version"
+            nvm install
+            nvm use
+
+            echo "📦 Installing dependencies"
+            npm install
+
+            echo "🏗 Building project"
+            npm run build
+
+            echo "🚀 Restarting PM2 process: $PM2_NAME"
+            pm2 startOrRestart ecosystem.config.js --only $PM2_NAME
+          EOF
