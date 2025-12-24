@@ -123,6 +123,73 @@ router.get("/:id/family", async (req: Request, res: Response) => {
   }
 });
 
+// @route PATCH /guests/:ids
+// @desc Update guest RSVP responses for listed guest IDs
+// @access Public
+router.patch("/:ids", async (req: Request, res: Response) => {
+  const idsParam = req.params.ids;
+  console.log(`PATCH /guests/${idsParam}`);
+
+  try {
+    const ids = idsParam
+      .split(",")
+      .map((id) => id.trim())
+      .filter((id) => mongoose.Types.ObjectId.isValid(id));
+
+    if (!ids.length) {
+      res.status(400).json({ message: "No valid guest IDs provided" });
+      return;
+    }
+
+    const body = req.body as unknown;
+    const guestsPayload = Array.isArray(body)
+      ? body
+      : Array.isArray((body as any).guests)
+        ? (body as any).guests
+        : null;
+
+    if (!guestsPayload || !guestsPayload.length) {
+      res.status(400).json({ message: "No guests provided" });
+      return;
+    }
+
+    const updates = guestsPayload
+      .map((guest: any) => {
+        const id = String(guest?._id || guest?.id || "").trim();
+        if (!id || !ids.includes(id) || !mongoose.Types.ObjectId.isValid(id)) {
+          return null;
+        }
+
+        return {
+          updateOne: {
+            filter: { _id: new mongoose.Types.ObjectId(id) },
+            update: {
+              confirmed_town_hall: guest.confirmed_town_hall,
+              confirmed_brunch: guest.confirmed_brunch,
+              notes: guest.notes ?? null,
+              selected_meal: guest.selected_meal ?? null,
+              selected_music: guest.selected_music ?? null,
+            },
+          },
+        };
+      })
+      .filter(Boolean) as any[];
+
+    if (!updates.length) {
+      res.status(400).json({ message: "No matching guests to update" });
+      return;
+    }
+
+    await Guest.bulkWrite(updates, { ordered: false });
+    const updatedGuests = await Guest.find({ _id: { $in: ids } });
+
+    res.status(200).json({ guests: updatedGuests });
+  } catch (error: any) {
+    console.log(error);
+    res.status(500).json({ error: error });
+  }
+});
+
 // @route GET /guests/:search
 // @desc Search for guests by firstname or lastname
 // @access Public
@@ -149,5 +216,6 @@ router.get("/:search", async (req: Request, res: Response) => {
     res.status(500).json({ error: error });
   }
 });
+
 
 module.exports = router;
