@@ -8,7 +8,7 @@ dotenv.config();
 const app: Express = express();
 const port: string | 3003 = process.env.PORT || 3003;
 const router: Router = express.Router();
-const corsOrigins = ["http://localhost:5173", "https://astroshare.fr", "https://manager.astroshare.fr"];
+const corsOrigins = ["http://localhost:5173", "https://enzolivia.fr"];
 
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
