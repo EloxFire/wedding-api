@@ -34,7 +34,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Important: gérer le preflight AVANT tes routes
-app.options("*", cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 app.use(cors(corsOptions));
 
 // (Optionnel mais utile) pour éviter des comportements bizarres de cache/proxy
