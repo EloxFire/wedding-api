@@ -6,24 +6,43 @@ import cors, {CorsOptions} from "cors";
 dotenv.config();
 
 const app: Express = express();
-const port: string | 3003 = process.env.PORT || 3003;
 const router: Router = express.Router();
-const corsOrigins = ["http://localhost:5173", "https://enzolivia.fr"];
+const port = Number(process.env.PORT) || 3003;
+
+const corsOrigins = new Set([
+  "http://localhost:5173",
+  "https://enzolivia.fr",
+]);
 
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
-    if (!origin || corsOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
+    // origin est undefined pour certains clients (curl, apps, etc.)
+    if (!origin) return callback(null, true);
+
+    if (corsOrigins.has(origin)) {
+      return callback(null, true);
     }
+
+    return callback(new Error(`Not allowed by CORS: ${origin}`));
   },
-  credentials: true
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Important: gérer le preflight AVANT tes routes
+app.options("*", cors(corsOptions));
 app.use(cors(corsOptions));
+
+// (Optionnel mais utile) pour éviter des comportements bizarres de cache/proxy
+app.use((req, res, next) => {
+  res.header("Vary", "Origin");
+  next();
+});
+
 app.use(router);
 
 // Routes
