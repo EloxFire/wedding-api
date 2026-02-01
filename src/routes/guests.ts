@@ -153,6 +153,12 @@ router.patch("/:ids", async (req: Request, res: Response) => {
       return;
     }
 
+    console.log({
+      ids,
+      guestsPayload
+    });
+    
+
     const updates = guestsPayload
       .map((guest: any) => {
         const id = String(guest?._id || guest?.id || "").trim();
@@ -164,11 +170,14 @@ router.patch("/:ids", async (req: Request, res: Response) => {
           updateOne: {
             filter: { _id: new mongoose.Types.ObjectId(id) },
             update: {
-              confirmed_town_hall: guest.confirmed_town_hall,
-              confirmed_brunch: guest.confirmed_brunch,
-              notes: guest.notes ?? null,
-              selected_meal: guest.selected_meal ?? null,
-              selected_music: guest.selected_music ?? null,
+              $set: {
+                confirmed: Boolean(guest.confirmed),
+                confirmed_town_hall: Boolean(guest.confirmed_town_hall),
+                confirmed_brunch: Boolean(guest.confirmed_brunch),
+                notes: guest.notes ?? null,
+                selected_meal: guest.selected_meal ?? null,
+                selected_music: guest.selected_music ?? null,
+              },
             },
           },
         };

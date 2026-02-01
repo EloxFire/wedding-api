@@ -11,6 +11,7 @@ const GuestSchema = new mongoose.Schema({
   notes: {type: String, required: false, default: null},
   selected_meal: {type: String, required: false, default: null},
   selected_music: {type: String, required: false, default: null},
+  confirmed: {type: Boolean, required: true, default: false}
 })
 
 const Guest = mongoose.model('Guest', GuestSchema);
