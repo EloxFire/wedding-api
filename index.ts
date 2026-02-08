@@ -12,6 +12,7 @@ const port = Number(process.env.PORT) || 3003;
 const corsOrigins = new Set([
   "http://localhost:5173",
   "https://enzolivia.fr",
+  "https://www.enzolivia.fr",
 ]);
 
 const corsOptions: CorsOptions = {
@@ -27,7 +28,7 @@ const corsOptions: CorsOptions = {
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "Access-Control-Allow-Origin"],
 };
 
 app.use(express.json());
